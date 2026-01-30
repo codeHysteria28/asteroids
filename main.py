@@ -11,6 +11,7 @@ from shot import Shot
 
 def main():
     pygame.init()
+    font = pygame.font.Font(None, 36)
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
 
@@ -26,9 +27,10 @@ def main():
 
     Player.containers = (updatable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-    player.shoot()  # guarantee at least one shot
 
     dt = 0
+
+    points_counter = 0
 
     while True:
         log_state()
@@ -36,7 +38,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-
+        
         updatable.update(dt)
         player.shot_cooldown_timer -= dt
 
@@ -45,9 +47,17 @@ def main():
                 log_event("player_hit")
                 print("Game over!")
                 sys.exit()
+            
+            for shot in shots:
+                if shot.collides_with(asteroid):
+                    log_event("asteroid_shot")
+                    shot.kill()
+                    asteroid.split()
+                    points_counter += 1
 
         screen.fill("black")
-
+        text_surface = font.render(f"{points_counter}", True, "red")
+        screen.blit(text_surface, (SCREEN_WIDTH - text_surface.get_width() -10, 10))
         for obj in drawable:
             obj.draw(screen)
 
